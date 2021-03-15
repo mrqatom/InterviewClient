@@ -2,14 +2,12 @@ package com.example.interviewclient.app_info_detail.view_model
 
 import android.app.Application
 import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.atom.myfirstkotlinproject.utils.extensions.switchAndAutoDispose
 import com.example.interviewclient.base.BaseViewModel
 import com.example.interviewclient.bean.AppInfo
 import com.example.interviewclient.util.PackageInfoUtil
-import io.reactivex.Observable
+import com.example.interviewclient.util.PermissionUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,9 +21,19 @@ class AppInfoDetailViewModel(application: Application) : BaseViewModel(applicati
     val appInfo: MutableLiveData<AppInfo> = MutableLiveData()
     val appSize: MutableLiveData<Long> = MutableLiveData()
 
+    /**
+     * 是否需要请求APP_SIZE权限，默认不需要
+     */
+    val needRequestPermission: MutableLiveData<Boolean> = MutableLiveData()
+
     fun getAppSize(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
-            PackageInfoUtil.queryAppSize(context, appInfo.value)
+            PackageInfoUtil.queryAppSize(context, appInfo.value) {
+                viewModelScope.launch(Dispatchers.Main) {
+                    PermissionUtil.requestPermission(context)
+                    needRequestPermission.value = true
+                }
+            }
             withContext(Dispatchers.Main) {
                 appSize.value = appInfo.value?.size
             }

@@ -1,5 +1,6 @@
 package com.example.interviewclient.util
 
+import android.annotation.SuppressLint
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -11,11 +12,14 @@ import java.util.*
  */
 object TimeUtil {
 
-    fun timeStamp2Date(seconds: Long): String {
-        val format = "yyyy-MM-dd HH:mm"
-        val sdf = SimpleDateFormat.getTimeInstance().format(format)
-        return sdf.format(Date(seconds))
+    fun formatData(timeStamp: Long): String {
+        if (timeStamp == 0L) {
+            return ""
+        }
+        var result = ""
+        @SuppressLint("SimpleDateFormat") val format =
+            SimpleDateFormat("dd-MM-yyyy HH:mm:ss")
+        result = format.format(Date(timeStamp))
+        return result
     }
-
-
 }

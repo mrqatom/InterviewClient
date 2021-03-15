@@ -12,5 +12,6 @@
     <string name="app_last_update_time">更新时间:</string>
     <string name="app_uninstall">卸载</string>
     <string name="cant_get">无法获取</string>
-    <string name="back"><![CDATA[<—返回]]></string>
+    <string name="calculating">计算中..</string>
+    <string name="back"><![CDATA[<返回]]></string>
 </resources>

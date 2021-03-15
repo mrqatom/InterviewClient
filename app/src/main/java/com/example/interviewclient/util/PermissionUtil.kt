@@ -15,9 +15,10 @@ object PermissionUtil {
         val ad: AlertDialog = AlertDialog.Builder(context)
             .setTitle("警告")
             .setMessage("缺少权限：permission.PACKAGE_USAGE_STATS\n需要在\"设置>安全\"中给应用提供权限")
-            .setPositiveButton("设置") { _, _ ->
+            .setPositiveButton("设置") { dialog, _ ->
                 val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
                 context.startActivity(intent)
+                dialog.dismiss()
             }
             .setNegativeButton("拒绝") { dialog, _ ->
                 dialog.dismiss()

@@ -15,12 +15,16 @@ import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
 import com.example.interviewclient.bean.AppInfo
 import com.example.interviewclient.util.PermissionUtil.requestPermission
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.lang.reflect.Method
 import kotlin.collections.ArrayList
 
 
 object PackageInfoUtil {
+    const val ERROR_CODE_NOT_PERMISSION = -1
+    const val ERROR_CODE_OTHER = -2
 
     fun getPackages(context: Context?): ArrayList<AppInfo> {
         val infos = ArrayList<AppInfo>()
@@ -51,12 +55,12 @@ object PackageInfoUtil {
     }
 
 
-    fun queryAppSize(context: Context, appInfo: AppInfo?) {
+    fun queryAppSize(context: Context, appInfo: AppInfo?,errorCallBack:(Int) ->Unit) {
         appInfo?.run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getAppSizeO(context, this)
+                getAppSizeO(context, this,errorCallBack)
             } else {
-                getAppsize(context, this)
+                getAppsize(context, this,errorCallBack)
             }
         }
     }
@@ -65,7 +69,7 @@ object PackageInfoUtil {
      * 获取应用的大小
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    fun getAppSizeO(context: Context, appInfo: AppInfo) {
+    fun getAppSizeO(context: Context, appInfo: AppInfo,errorCallBack:(Int) ->Unit) {
         val curTime = System.currentTimeMillis()
         val storageStatsManager =
             context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
@@ -82,7 +86,7 @@ object PackageInfoUtil {
             e.printStackTrace()
         } catch (e: SecurityException) {
             //这里说明没有权限，没有权限只能查询自身应用大小
-            requestPermission(context)
+            errorCallBack(ERROR_CODE_NOT_PERMISSION)
             return
         }
         appInfo.size = storageStats?.appBytes ?: 0
@@ -108,7 +112,7 @@ object PackageInfoUtil {
     /**
      * 获取应用大小8.0以下
      */
-    fun getAppsize(context: Context, appInfo: AppInfo) {
+    fun getAppsize(context: Context, appInfo: AppInfo,errorCallBack:(Int) ->Unit) {
         try {
             val method: Method =
                 PackageManager::class.java.getMethod(
@@ -131,6 +135,7 @@ object PackageInfoUtil {
                     }
                 })
         } catch (e: Exception) {
+            errorCallBack(ERROR_CODE_OTHER)
             e.printStackTrace()
         }
     }
