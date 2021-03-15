@@ -3,4 +3,14 @@
 
     <string name="app_list">应用列表</string>
     <string name="recommend_list">推荐列表</string>
+    <string name="app_list_update">应用列表已更新</string>
+
+    <string name="app_version">当前版本:</string>
+    <string name="app_package_name">应用包名:</string>
+    <string name="app_size">应用大小:</string>
+    <string name="app_install_time">安装时间:</string>
+    <string name="app_last_update_time">更新时间:</string>
+    <string name="app_uninstall">卸载</string>
+    <string name="cant_get">无法获取</string>
+    <string name="back"><![CDATA[<—返回]]></string>
 </resources>

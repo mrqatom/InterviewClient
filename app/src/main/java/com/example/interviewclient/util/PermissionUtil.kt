@@ -2,14 +2,11 @@ package com.example.interviewclient.util
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
-
 import android.content.Intent
 import android.provider.Settings
 
 
 object PermissionUtil {
-
 
     /**
      * 请求 PACKAGE_USAGE_STATS 权限，使用自带的权限查询，有很大可能是显示无权限
