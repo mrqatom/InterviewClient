@@ -16,17 +16,21 @@ class RemoteRepository {
         private const val TAG = "RemoteRepository"
     }
 
-    fun getRecommendApp(context: Context): List<RecommendInfo>? {
+    fun getRecommendApp(context: Context): MutableList<RecommendInfo>? {
         val uri: Uri =
             Uri.parse("content://com.example.interviewservice.provider.RecommendAppProvider")
         val recommendCursor = context.contentResolver.query(uri, null, null, null, null)
         recommendCursor?.run {
-            val info = listOf<RecommendInfo>()
+            val info = mutableListOf<RecommendInfo>()
             while (recommendCursor.moveToNext()) {
-                Log.d(TAG, "1: " + recommendCursor.getString(0))
-                Log.d(TAG, "2: " + recommendCursor.getString(1))
-                Log.d(TAG, "3: " + recommendCursor.getString(2))
-                Log.d(TAG, "4: " + recommendCursor.getString(3))
+                info.add(
+                    RecommendInfo(
+                        recommendCursor.getString(0),
+                        recommendCursor.getString(1),
+                        recommendCursor.getString(2),
+                        recommendCursor.getString(3)
+                    )
+                )
             }
             recommendCursor.close()
             return info

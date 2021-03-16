@@ -11,8 +11,8 @@ import kotlinx.android.parcel.Parcelize
  */
 @Keep
 data class RecommendInfo(
-    var icon: String,
+    var packageName: String,
     var appName: String,
-    var version: String?,
-    var packageName: String
+    var icon: String,
+    var version: String?
 )

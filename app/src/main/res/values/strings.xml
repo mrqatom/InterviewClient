@@ -15,4 +15,7 @@
     <string name="cant_get">无法获取</string>
     <string name="calculating">计算中..</string>
     <string name="back"><![CDATA[<返回]]></string>
+
+    <string name="cant_install">市场中未找到该应用</string>
+    <string name="has_install">应用已下载</string>
 </resources>

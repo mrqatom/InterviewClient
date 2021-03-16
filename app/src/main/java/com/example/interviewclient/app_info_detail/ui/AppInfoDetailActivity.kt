@@ -21,7 +21,7 @@ import kotlinx.android.synthetic.main.activity_app_info_detail.*
  */
 class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnClickListener {
     companion object {
-        private const val UNINSTALL_REQUEST_CODE = 0
+        private const val UNINSTALL_REQUEST_CODE = 0x1
         private const val TAG = "AppInfoDetailActivity"
     }
 

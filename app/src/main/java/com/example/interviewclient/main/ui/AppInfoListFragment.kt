@@ -1,10 +1,8 @@
 package com.example.interviewclient.main.ui
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,18 +14,15 @@ import com.example.interviewclient.base.BaseFragment
 import com.example.interviewclient.constant.IntentConstant
 import com.example.interviewclient.main.adapter.AppInfoListAdapter
 import com.example.interviewclient.main.view_model.MainViewModel
-import com.example.interviewclient.util.PermissionUtil
 import com.example.interviewclient.util.ToastUtil
 import kotlinx.android.synthetic.main.fragment_app_info_list.*
-import org.greenrobot.eventbus.EventBus
 
 /**
  * 已安装应用列表页
  */
 class AppInfoListFragment(override val mViewModel: MainViewModel) : BaseFragment<MainViewModel>() {
     companion object {
-        private const val UNINSTALL_REQUEST_CODE = 0
-        private const val TAG = "AppInfoListFragment"
+        private const val UNINSTALL_REQUEST_CODE = 0x1
     }
 
     private lateinit var appInfoListAdapter: AppInfoListAdapter
@@ -57,9 +52,14 @@ class AppInfoListFragment(override val mViewModel: MainViewModel) : BaseFragment
 
     override fun initViewObservable() {
         mViewModel.appInfo.observe(this, Observer {
-            appInfoListAdapter.appInfo = it
-            appInfoListAdapter.notifyDataSetChanged()
-            ToastUtil.showShort(context, getString(R.string.app_list_update))
+            if (it == null || it.isEmpty()){
+                app_list_no_data.visibility = View.VISIBLE
+            }else{
+                app_list_no_data.visibility = View.GONE
+                appInfoListAdapter.appInfo = it
+                appInfoListAdapter.notifyDataSetChanged()
+                mViewModel.toastMsg.value = getString(R.string.app_list_update)
+            }
         })
     }
 

@@ -2,13 +2,17 @@ package com.example.interviewclient.util
 
 import android.app.usage.StorageStats
 import android.app.usage.StorageStatsManager
+import android.content.ActivityNotFoundException
 import android.content.Context
+import android.content.Intent
 import android.content.pm.*
+import android.net.Uri
 import android.os.Build
 import android.os.storage.StorageManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
+import com.example.interviewclient.R
 import com.example.interviewclient.bean.AppInfo
 import java.io.IOException
 import java.lang.reflect.Method

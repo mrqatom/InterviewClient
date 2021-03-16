@@ -4,13 +4,11 @@ import android.app.Application
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import com.atom.myfirstkotlinproject.utils.extensions.switchAndAutoDispose
 import com.example.interviewclient.base.BaseViewModel
 import com.example.interviewclient.bean.AppInfo
 import com.example.interviewclient.bean.RecommendInfo
 import com.example.interviewclient.repository.RemoteRepository
 import com.example.interviewclient.util.PackageInfoUtil
-import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -21,12 +19,20 @@ import kotlinx.coroutines.withContext
  * @description
  */
 class MainViewModel(application: Application) : BaseViewModel(application) {
-    val appInfo: MutableLiveData<MutableList<AppInfo>> = MutableLiveData()
-    val appRecommend: MutableLiveData<List<RecommendInfo>> = MutableLiveData()
-    val remoteRepository by lazy {
+    val appInfo = MutableLiveData<MutableList<AppInfo>>()
+    val appRecommend = MutableLiveData<MutableList<RecommendInfo>>()
+
+    /**
+     * 去下载的应用在appRecommend的position
+     */
+    var recommendInstallPosition = 0
+    private val remoteRepository by lazy {
         RemoteRepository()
     }
 
+    /**
+     * 查询已安装的app
+     */
     fun getAppInfo(context: Context?) {
         viewModelScope.launch(Dispatchers.IO) {
             val info = PackageInfoUtil.getPackages(context)
@@ -36,8 +42,31 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
         }
     }
 
+    /**
+     * 请求推荐app
+     */
     fun getRecommendApp(context: Context) {
-        remoteRepository.getRecommendApp(context)
+        appRecommend.value = remoteRepository.getRecommendApp(context)?.filterNot { recommend ->
+            var isInstall = false
+            appInfo.value?.forEach {
+                if (it.packageName == recommend.packageName) {
+                    isInstall = true
+                }
+            }
+            isInstall
+        }?.toMutableList()
+    }
+
+    fun checkInstallAndUpdate(context: Context, updateCallback: (Int) -> Unit) {
+        if (PackageInfoUtil.isApplicationAvailable(
+                context,
+                appRecommend.value?.get(recommendInstallPosition)?.packageName ?: ""
+            )
+        ) {
+            appRecommend.value?.removeAt(recommendInstallPosition)
+            updateCallback(recommendInstallPosition)
+            getAppInfo(context)
+        }
     }
 
     fun uninstallApp(position: Int) {
