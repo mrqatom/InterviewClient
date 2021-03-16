@@ -1,8 +1,10 @@
 package com.example.interviewclient.main.ui
 
 import android.Manifest
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,9 +19,19 @@ import com.example.interviewclient.main.view_model.MainViewModel
 import com.example.interviewclient.util.PermissionUtil
 import com.example.interviewclient.util.ToastUtil
 import kotlinx.android.synthetic.main.fragment_app_info_list.*
+import org.greenrobot.eventbus.EventBus
 
+/**
+ * 已安装应用列表页
+ */
 class AppInfoListFragment(override val mViewModel: MainViewModel) : BaseFragment<MainViewModel>() {
+    companion object {
+        private const val UNINSTALL_REQUEST_CODE = 0
+        private const val TAG = "AppInfoListFragment"
+    }
+
     private lateinit var appInfoListAdapter: AppInfoListAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -36,8 +48,9 @@ class AppInfoListFragment(override val mViewModel: MainViewModel) : BaseFragment
         app_info_list_view.layoutManager = LinearLayoutManager(activity)
         appInfoListAdapter = AppInfoListAdapter(activity) {
             val intent = Intent(activity, AppInfoDetailActivity::class.java)
-            intent.putExtra(IntentConstant.INTENT_KEY_APP_INFO,mViewModel.appInfo.value?.get(it))
-            startActivity(intent)
+            intent.putExtra(IntentConstant.INTENT_KEY_APP_INFO, mViewModel.appInfo.value?.get(it))
+            intent.putExtra(IntentConstant.INTENT_KEY_APP_INFO_POSITION, it)
+            startActivityForResult(intent, UNINSTALL_REQUEST_CODE)
         }
         app_info_list_view.adapter = appInfoListAdapter
     }
@@ -54,4 +67,19 @@ class AppInfoListFragment(override val mViewModel: MainViewModel) : BaseFragment
         mViewModel.getAppInfo(activity)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        when (requestCode) {
+            UNINSTALL_REQUEST_CODE ->
+                if (resultCode == Activity.RESULT_OK) {
+                    data?.run {
+                        val position = getIntExtra(IntentConstant.INTENT_KEY_APP_INFO_POSITION, 0)
+                        mViewModel.uninstallApp(position)
+                        appInfoListAdapter.notifyItemRemoved(position)
+                    }
+                }
+            else -> {
+            }
+        }
+    }
 }

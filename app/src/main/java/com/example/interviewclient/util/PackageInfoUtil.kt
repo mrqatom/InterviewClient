@@ -3,23 +3,15 @@ package com.example.interviewclient.util
 import android.app.usage.StorageStats
 import android.app.usage.StorageStatsManager
 import android.content.Context
-import android.content.pm.ApplicationInfo
-import android.content.pm.IPackageStatsObserver
-import android.content.pm.PackageManager
-import android.content.pm.PackageStats
-import android.graphics.drawable.BitmapDrawable
+import android.content.pm.*
 import android.os.Build
 import android.os.storage.StorageManager
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.graphics.drawable.toBitmap
 import com.example.interviewclient.bean.AppInfo
-import com.example.interviewclient.util.PermissionUtil.requestPermission
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.lang.reflect.Method
-import kotlin.collections.ArrayList
 
 
 object PackageInfoUtil {
@@ -50,17 +42,16 @@ object PackageInfoUtil {
                 )
             }
         }
-
         return infos
     }
 
 
-    fun queryAppSize(context: Context, appInfo: AppInfo?,errorCallBack:(Int) ->Unit) {
+    fun queryAppSize(context: Context, appInfo: AppInfo?, errorCallBack: (Int) -> Unit) {
         appInfo?.run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getAppSizeO(context, this,errorCallBack)
+                getAppSizeO(context, this, errorCallBack)
             } else {
-                getAppsize(context, this,errorCallBack)
+                getAppsize(context, this, errorCallBack)
             }
         }
     }
@@ -69,7 +60,7 @@ object PackageInfoUtil {
      * 获取应用的大小
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    fun getAppSizeO(context: Context, appInfo: AppInfo,errorCallBack:(Int) ->Unit) {
+    fun getAppSizeO(context: Context, appInfo: AppInfo, errorCallBack: (Int) -> Unit) {
         val curTime = System.currentTimeMillis()
         val storageStatsManager =
             context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
@@ -112,7 +103,7 @@ object PackageInfoUtil {
     /**
      * 获取应用大小8.0以下
      */
-    fun getAppsize(context: Context, appInfo: AppInfo,errorCallBack:(Int) ->Unit) {
+    fun getAppsize(context: Context, appInfo: AppInfo, errorCallBack: (Int) -> Unit) {
         try {
             val method: Method =
                 PackageManager::class.java.getMethod(
@@ -138,6 +129,29 @@ object PackageInfoUtil {
             errorCallBack(ERROR_CODE_OTHER)
             e.printStackTrace()
         }
+    }
+
+    /**
+     * 判断手机是否安装某个应用
+     * @param context
+     * @param appPackageName  应用包名
+     * @return   true：安装，false：未安装
+     */
+    fun isApplicationAvailable(
+        context: Context?,
+        appPackageName: String
+    ): Boolean {
+        context?.run {
+            val pinfo: List<PackageInfo> =
+                packageManager.getInstalledPackages(0) // 获取所有已安装程序的包信息
+            for (i in pinfo.indices) {
+                val pn: String = pinfo[i].packageName
+                if (appPackageName == pn) {
+                    return true
+                }
+            }
+        }
+        return false
     }
 
 }

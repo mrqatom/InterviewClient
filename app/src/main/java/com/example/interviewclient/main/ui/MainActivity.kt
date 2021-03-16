@@ -8,6 +8,7 @@ import com.example.interviewclient.main.adapter.MViewPagerAdapter
 import com.example.interviewclient.main.view_model.MainViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 
+
 class MainActivity : BaseActivity<MainViewModel>() {
 
     override val layoutId = R.layout.activity_main

@@ -11,12 +11,21 @@ import com.example.interviewclient.R
 import com.example.interviewclient.app_info_detail.view_model.AppInfoDetailViewModel
 import com.example.interviewclient.base.BaseActivity
 import com.example.interviewclient.constant.IntentConstant.INTENT_KEY_APP_INFO
+import com.example.interviewclient.constant.IntentConstant.INTENT_KEY_APP_INFO_POSITION
+import com.example.interviewclient.util.PackageInfoUtil
 import com.example.interviewclient.util.TimeUtil
 import kotlinx.android.synthetic.main.activity_app_info_detail.*
 
+/**
+ * 应用详情页面
+ */
 class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnClickListener {
-    private val UNINSTALL_REQUEST_CODE = 0
-    private val TAG = "AppInfoDetailActivity"
+    companion object {
+        private const val UNINSTALL_REQUEST_CODE = 0
+        private const val TAG = "AppInfoDetailActivity"
+    }
+
+    private var position: Int = 0
     override val layoutId = R.layout.activity_app_info_detail
     override val mViewModel by lazy { initViewModel<AppInfoDetailViewModel>() }
 
@@ -27,7 +36,7 @@ class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnCli
 
     override fun onResume() {
         super.onResume()
-        if (mViewModel.needRequestPermission.value == true){
+        if (mViewModel.needRequestPermission.value == true) {
             //刚刚尝试请求权限，默认已获得权限
             mViewModel.needRequestPermission.value = false
         }
@@ -35,6 +44,7 @@ class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnCli
 
     override fun initData() {
         mViewModel.appInfo.value = intent.getParcelableExtra(INTENT_KEY_APP_INFO)
+        position = intent.getIntExtra(INTENT_KEY_APP_INFO_POSITION, 0)
     }
 
     @SuppressLint("SetTextI18n")
@@ -81,9 +91,16 @@ class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnCli
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
-            UNINSTALL_REQUEST_CODE -> if (resultCode == Activity.RESULT_OK) {
+            //部分机型卸载完成后resultCode ！= Activity.RESULT_OK
+            UNINSTALL_REQUEST_CODE -> if (resultCode == Activity.RESULT_OK || !PackageInfoUtil.isApplicationAvailable(
+                    this, mViewModel.appInfo.value?.packageName ?: ""
+                )
+            ) {
+                setResult(
+                    Activity.RESULT_OK,
+                    Intent().putExtra(INTENT_KEY_APP_INFO_POSITION, position)
+                )
                 finish()
-                // TODO: 2021/3/15 通知列表界面刷新
             } else {
                 Log.e(TAG, "onActivityResult: 卸载失败")
             }
