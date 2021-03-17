@@ -10,4 +10,5 @@ import androidx.lifecycle.MutableLiveData
  */
 abstract class BaseViewModel(application: Application) : AndroidViewModel(application) {
     var toastMsg: MutableLiveData<String> = MutableLiveData()
+    var loadingViewVisible: MutableLiveData<Boolean> = MutableLiveData()
 }

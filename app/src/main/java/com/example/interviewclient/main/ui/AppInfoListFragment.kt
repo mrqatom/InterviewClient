@@ -52,6 +52,7 @@ class AppInfoListFragment(override val mViewModel: MainViewModel) : BaseFragment
 
     override fun initViewObservable() {
         mViewModel.appInfo.observe(this, Observer {
+            mViewModel.loadingViewVisible.value = false
             if (it == null || it.isEmpty()){
                 app_list_no_data.visibility = View.VISIBLE
             }else{
@@ -64,6 +65,7 @@ class AppInfoListFragment(override val mViewModel: MainViewModel) : BaseFragment
     }
 
     override fun initData() {
+        mViewModel.loadingViewVisible.value = true
         mViewModel.getAppInfo(activity)
     }
 

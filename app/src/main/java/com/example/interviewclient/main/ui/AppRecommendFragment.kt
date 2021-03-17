@@ -1,10 +1,7 @@
 package com.example.interviewclient.main.ui
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -16,7 +13,6 @@ import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.interviewclient.R
 import com.example.interviewclient.base.BaseFragment
-import com.example.interviewclient.constant.IntentConstant
 import com.example.interviewclient.main.adapter.AppRecommendAdapter
 import com.example.interviewclient.main.view_model.MainViewModel
 import com.example.interviewclient.util.PackageInfoUtil
@@ -58,18 +54,26 @@ class AppRecommendFragment(override val mViewModel: MainViewModel) : BaseFragmen
 
     override fun initViewObservable() {
         mViewModel.appRecommend.observe(this, Observer {
-            if (it == null || it.isEmpty()) {
-                app_recommend_no_data.visibility = VISIBLE
-            } else {
-                app_recommend_no_data.visibility = GONE
-                appRecommendAdapter.appInfo = it
-                appRecommendAdapter.notifyDataSetChanged()
+            mViewModel.loadingViewVisible.value = false
+            when {
+                it == null -> {
+                    mViewModel.toastMsg.value = getString(R.string.cant_connect_service)
+                }
+                it.isEmpty() -> {
+                    app_recommend_no_data.visibility = VISIBLE
+                }
+                else -> {
+                    app_recommend_no_data.visibility = GONE
+                    appRecommendAdapter.appInfo = it
+                    appRecommendAdapter.notifyDataSetChanged()
+                }
             }
         })
     }
 
     override fun initData() {
         activity?.run {
+            mViewModel.loadingViewVisible.value = true
             mViewModel.getRecommendApp(this)
         }
     }

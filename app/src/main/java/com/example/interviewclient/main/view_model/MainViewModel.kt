@@ -46,15 +46,20 @@ class MainViewModel(application: Application) : BaseViewModel(application) {
      * 请求推荐app
      */
     fun getRecommendApp(context: Context) {
-        appRecommend.value = remoteRepository.getRecommendApp(context)?.filterNot { recommend ->
-            var isInstall = false
-            appInfo.value?.forEach {
-                if (it.packageName == recommend.packageName) {
-                    isInstall = true
+        viewModelScope.launch(Dispatchers.IO) {
+            val recommendInfo = remoteRepository.getRecommendApp(context)?.filterNot { recommend ->
+                var isInstall = false
+                appInfo.value?.forEach {
+                    if (it.packageName == recommend.packageName) {
+                        isInstall = true
+                    }
                 }
+                isInstall
+            }?.toMutableList()
+            withContext(Dispatchers.Main) {
+                appRecommend.value = recommendInfo
             }
-            isInstall
-        }?.toMutableList()
+        }
     }
 
     fun checkInstallAndUpdate(context: Context, updateCallback: (Int) -> Unit) {

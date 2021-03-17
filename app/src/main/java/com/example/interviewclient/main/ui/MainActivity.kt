@@ -11,9 +11,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : BaseActivity<MainViewModel>() {
 
-    override val layoutId = R.layout.activity_main
     override val mViewModel by lazy { initViewModel<MainViewModel>() }
     private val fragments = ArrayList<Fragment>()
+
+    override fun onBindLayout(): Int {
+        return R.layout.activity_main
+    }
 
     override fun initView() {
         fragments.add(AppInfoListFragment(mViewModel))
@@ -31,4 +34,7 @@ class MainActivity : BaseActivity<MainViewModel>() {
         tablayout.getTabAt(1)?.setText(R.string.recommend_list)
     }
 
+    override fun enableLoadingView(): Boolean {
+        return true
+    }
 }

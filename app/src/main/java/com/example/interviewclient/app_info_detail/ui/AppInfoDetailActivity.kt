@@ -26,8 +26,11 @@ class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnCli
     }
 
     private var position: Int = 0
-    override val layoutId = R.layout.activity_app_info_detail
     override val mViewModel by lazy { initViewModel<AppInfoDetailViewModel>() }
+
+    override fun onBindLayout(): Int {
+        return R.layout.activity_app_info_detail
+    }
 
     override fun initView() {
         app_detail_back.setOnClickListener(this)

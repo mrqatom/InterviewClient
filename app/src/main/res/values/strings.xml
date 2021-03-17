@@ -18,4 +18,5 @@
 
     <string name="cant_install">市场中未找到该应用</string>
     <string name="has_install">应用已下载</string>
+    <string name="cant_connect_service">无法连接服务器</string>
 </resources>

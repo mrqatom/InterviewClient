@@ -1,9 +1,11 @@
 package com.example.interviewclient.repository
 
 import android.content.Context
+import android.database.Cursor
 import android.net.Uri
 import android.util.Log
 import com.example.interviewclient.bean.RecommendInfo
+import java.lang.Exception
 
 /**
  * @author qiuyunfei
@@ -19,7 +21,12 @@ class RemoteRepository {
     fun getRecommendApp(context: Context): MutableList<RecommendInfo>? {
         val uri: Uri =
             Uri.parse("content://com.example.interviewservice.provider.RecommendAppProvider")
-        val recommendCursor = context.contentResolver.query(uri, null, null, null, null)
+        var recommendCursor: Cursor? = null
+        try {
+            recommendCursor = context.contentResolver.query(uri, null, null, null, null)
+        } catch (e: Exception) {
+            Log.e(TAG, "服务器出错或连接服务器失败!")
+        }
         recommendCursor?.run {
             val info = mutableListOf<RecommendInfo>()
             while (recommendCursor.moveToNext()) {
