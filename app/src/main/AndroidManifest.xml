@@ -32,7 +32,6 @@
         <activity
             android:name=".app_info_detail.ui.AppInfoDetailActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
             android:screenOrientation="portrait" />
     </application>
 

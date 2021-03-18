@@ -11,7 +11,6 @@ import com.example.interviewclient.R
 import com.example.interviewclient.app_info_detail.view_model.AppInfoDetailViewModel
 import com.example.interviewclient.base.BaseActivity
 import com.example.interviewclient.constant.IntentConstant.INTENT_KEY_APP_INFO
-import com.example.interviewclient.constant.IntentConstant.INTENT_KEY_APP_INFO_POSITION
 import com.example.interviewclient.util.PackageInfoUtil
 import com.example.interviewclient.util.TimeUtil
 import kotlinx.android.synthetic.main.activity_app_info_detail.*
@@ -47,7 +46,6 @@ class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnCli
 
     override fun initData() {
         mViewModel.appInfo.value = intent.getParcelableExtra(INTENT_KEY_APP_INFO)
-        position = intent.getIntExtra(INTENT_KEY_APP_INFO_POSITION, 0)
     }
 
     @SuppressLint("SetTextI18n")
@@ -65,7 +63,7 @@ class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnCli
 
         mViewModel.appSize.observe(this, Observer {
             val size = it / 1000000
-            app_detail_size.text = "$size M"
+            app_detail_size.text = if (size > 0) "$size M" else "小于1M"
         })
         mViewModel.needRequestPermission.observe(this, Observer {
             if (!it) {
@@ -99,10 +97,6 @@ class AppInfoDetailActivity : BaseActivity<AppInfoDetailViewModel>(), View.OnCli
                     this, mViewModel.appInfo.value?.packageName ?: ""
                 )
             ) {
-                setResult(
-                    Activity.RESULT_OK,
-                    Intent().putExtra(INTENT_KEY_APP_INFO_POSITION, position)
-                )
                 finish()
             } else {
                 Log.e(TAG, "onActivityResult: 卸载失败")

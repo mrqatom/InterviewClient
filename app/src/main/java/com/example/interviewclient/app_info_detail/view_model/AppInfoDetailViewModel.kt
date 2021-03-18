@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.interviewclient.base.BaseViewModel
 import com.example.interviewclient.bean.AppInfo
 import com.example.interviewclient.util.PackageInfoUtil
+import com.example.interviewclient.util.PackageInfoUtil.ERROR_CODE_NOT_PERMISSION
 import com.example.interviewclient.util.PermissionUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -28,14 +29,15 @@ class AppInfoDetailViewModel(application: Application) : BaseViewModel(applicati
 
     fun getAppSize(context: Context) {
         viewModelScope.launch(Dispatchers.IO) {
-            PackageInfoUtil.queryAppSize(context, appInfo.value) {
-                viewModelScope.launch(Dispatchers.Main) {
-                    PermissionUtil.requestPermission(context)
-                    needRequestPermission.value = true
+            PackageInfoUtil.queryAppSize(context, appInfo.value?.packageName,{
+                appSize.postValue(it)
+            }) {
+                if (it == ERROR_CODE_NOT_PERMISSION) {
+                    viewModelScope.launch(Dispatchers.Main) {
+                        PermissionUtil.requestPermission(context)
+                        needRequestPermission.value = true
+                    }
                 }
-            }
-            withContext(Dispatchers.Main) {
-                appSize.value = appInfo.value?.size
             }
         }
     }

@@ -7,5 +7,4 @@ package com.example.interviewclient.constant
  */
 object IntentConstant {
     const val INTENT_KEY_APP_INFO = "key_app_info"
-    const val INTENT_KEY_APP_INFO_POSITION = "key_app_info_position"
 }

@@ -2,18 +2,12 @@ package com.example.interviewclient.util
 
 import android.app.usage.StorageStats
 import android.app.usage.StorageStatsManager
-import android.content.ActivityNotFoundException
 import android.content.Context
-import android.content.Intent
 import android.content.pm.*
-import android.net.Uri
 import android.os.Build
 import android.os.storage.StorageManager
 import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.core.graphics.drawable.toBitmap
-import com.example.interviewclient.R
-import com.example.interviewclient.bean.AppInfo
 import java.io.IOException
 import java.lang.reflect.Method
 
@@ -22,40 +16,17 @@ object PackageInfoUtil {
     const val ERROR_CODE_NOT_PERMISSION = -1
     const val ERROR_CODE_OTHER = -2
 
-    fun getPackages(context: Context?): ArrayList<AppInfo> {
-        val infos = ArrayList<AppInfo>()
-        context?.run {
-            val packages = packageManager.getInstalledPackages(0)
-            packages.forEachIndexed { index, packageInfo ->
-                val curTime = System.currentTimeMillis()
-                if ((packageInfo.applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM) == 0) {
-                    val appInfo = AppInfo(
-                        icon = packageInfo.applicationInfo.loadIcon(packageManager).toBitmap(),
-                        appName = packageInfo.applicationInfo.loadLabel(packageManager)
-                            .toString(),
-                        version = packageInfo.versionName,
-                        installTime = packageInfo.firstInstallTime,
-                        lastUpdateTime = packageInfo.lastUpdateTime,
-                        packageName = packageInfo.packageName
-                    )
-                    infos.add(appInfo)
-                }
-                Log.e(
-                    "getPackageInfo",
-                    "$index,getAppSize:${System.currentTimeMillis() - curTime}"
-                )
-            }
-        }
-        return infos
-    }
-
-
-    fun queryAppSize(context: Context, appInfo: AppInfo?, errorCallBack: (Int) -> Unit) {
-        appInfo?.run {
+    fun queryAppSize(
+        context: Context,
+        packageName: String?,
+        successCallback: (Long) -> Unit,
+        errorCallBack: (Int) -> Unit
+    ) {
+        packageName?.run {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                getAppSizeO(context, this, errorCallBack)
+                getAppSizeO(context, this, successCallback, errorCallBack)
             } else {
-                getAppsize(context, this, errorCallBack)
+                getAppSize(context, this, successCallback, errorCallBack)
             }
         }
     }
@@ -64,11 +35,16 @@ object PackageInfoUtil {
      * 获取应用的大小
      */
     @RequiresApi(api = Build.VERSION_CODES.O)
-    fun getAppSizeO(context: Context, appInfo: AppInfo, errorCallBack: (Int) -> Unit) {
+    fun getAppSizeO(
+        context: Context,
+        packageName: String?,
+        successCallback: (Long) -> Unit,
+        errorCallBack: (Int) -> Unit
+    ) {
         val curTime = System.currentTimeMillis()
         val storageStatsManager =
             context.getSystemService(Context.STORAGE_STATS_SERVICE) as StorageStatsManager
-        val uid: Int = getUid(context, appInfo.packageName)
+        val uid: Int = getUid(context, packageName)
         //通过包名获取uid
         var storageStats: StorageStats? = null
         try {
@@ -84,10 +60,10 @@ object PackageInfoUtil {
             errorCallBack(ERROR_CODE_NOT_PERMISSION)
             return
         }
-        appInfo.size = storageStats?.appBytes ?: 0
+        successCallback(storageStats?.appBytes ?: 0)
         Log.e(
             "getAppSizeO",
-            "${appInfo.packageName}:appBytes:${storageStats?.appBytes},dataBytes${storageStats?.dataBytes}"
+            "${packageName}:appBytes:${storageStats?.appBytes},dataBytes${storageStats?.dataBytes}"
         )
     }
 
@@ -107,7 +83,12 @@ object PackageInfoUtil {
     /**
      * 获取应用大小8.0以下
      */
-    fun getAppsize(context: Context, appInfo: AppInfo, errorCallBack: (Int) -> Unit) {
+    private fun getAppSize(
+        context: Context,
+        packageName: String?,
+        successCallback: (Long) -> Unit,
+        errorCallBack: (Int) -> Unit
+    ) {
         try {
             val method: Method =
                 PackageManager::class.java.getMethod(
@@ -116,17 +97,17 @@ object PackageInfoUtil {
             // 调用 getPackageSizeInfo 方法，需要两个参数：1、需要检测的应用包名；2、回调
             method.invoke(
                 context.packageManager,
-                appInfo.packageName,
+                packageName,
                 object : IPackageStatsObserver.Stub() {
                     override fun onGetStatsCompleted(
                         pStats: PackageStats,
                         succeeded: Boolean
                     ) {
-                        appInfo.size = pStats.dataSize
                         Log.e(
-                            "getAppSizeO",
-                            "${appInfo.packageName}:appBytes:${pStats.dataSize},dataBytes${pStats.codeSize}"
+                            "getAppSize",
+                            "${packageName}:appBytes:${pStats.dataSize},dataBytes${pStats.codeSize}"
                         )
+                        successCallback(pStats.codeSize)
                     }
                 })
         } catch (e: Exception) {

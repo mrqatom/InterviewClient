@@ -1,5 +1,10 @@
 package com.example.interviewclient.main.ui
 
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Bundle
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentPagerAdapter.BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT
 import com.example.interviewclient.R
@@ -36,5 +41,42 @@ class MainActivity : BaseActivity<MainViewModel>() {
 
     override fun enableLoadingView(): Boolean {
         return true
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        registerReceiver(packageReceiver, IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addDataScheme("package")
+        })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(packageReceiver)
+    }
+
+    private val packageReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            intent?.run {
+                // 安装
+                if (action.equals(Intent.ACTION_PACKAGE_ADDED)) {
+                    dataString?.substringAfter(":")?.let {
+                        mViewModel.installApp(
+                            packageManager.getPackageInfo(it, 0),
+                            this@MainActivity
+                        )
+                    }
+                }
+                // 移除
+                if (action.equals(Intent.ACTION_PACKAGE_REMOVED)) {
+                    dataString?.substringAfter(":")?.let {
+                        mViewModel.uninstallApp(it)
+                    }
+                }
+            }
+        }
+
     }
 }
